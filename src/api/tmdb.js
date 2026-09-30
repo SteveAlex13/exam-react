@@ -1,0 +1,7 @@
+const API_URL='https://api.themoviedb.org/3'
+const IMAGE_URL='https://image.tmdb.org/t/p'
+function key(){const value=import.meta.env.VITE_TMDB_API_KEY;if(!value) throw new Error('API key TMDB belum diisi. Salin .env.example menjadi .env lalu isi key Anda.');return value}
+async function request(path,params={},signal){const url=new URL(API_URL+path);url.searchParams.set('api_key',key());url.searchParams.set('language','id-ID');Object.entries(params).forEach(([k,v])=>{if(v!==''&&v!=null)url.searchParams.set(k,v)});const response=await fetch(url,{signal});if(!response.ok){let message=`TMDB gagal merespons (${response.status})`;try{const body=await response.json();message=body.status_message||message}catch{message=`TMDB gagal merespons (${response.status})`}throw new Error(message)}return response.json()}
+export function getMovies({query='',page=1,year='',rating='',sort='popularity.desc'},signal){if(query.trim())return request('/search/movie',{query:query.trim(),page,primary_release_year:year,include_adult:false},signal);return request('/discover/movie',{page,primary_release_year:year,'vote_average.gte':rating,'vote_count.gte':sort==='vote_average.desc'?200:undefined,sort_by:sort,include_adult:false},signal)}
+export function getMovieDetail(id,signal){return request(`/movie/${id}`,{append_to_response:'credits,videos,similar'},signal)}
+export function imageUrl(path,size='w500'){return path?`${IMAGE_URL}/${size}${path}`:null}
