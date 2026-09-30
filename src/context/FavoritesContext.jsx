@@ -1,0 +1,5 @@
+import { createContext, useCallback, useContext, useMemo } from 'react'
+import useLocalStorage from '../hooks/useLocalStorage'
+const FavoritesContext=createContext(null)
+export function FavoritesProvider({children}){const[favorites,setFavorites]=useLocalStorage('cinescope-favorites',[]);const isFavorite=useCallback(id=>favorites.some(movie=>movie.id===Number(id)),[favorites]);const toggleFavorite=useCallback(movie=>setFavorites(current=>current.some(item=>item.id===movie.id)?current.filter(item=>item.id!==movie.id):[...current,{id:movie.id,title:movie.title,poster_path:movie.poster_path,vote_average:movie.vote_average,release_date:movie.release_date,overview:movie.overview}]),[setFavorites]);const clearFavorites=useCallback(()=>setFavorites([]),[setFavorites]);const value=useMemo(()=>({favorites,isFavorite,toggleFavorite,clearFavorites}),[favorites,isFavorite,toggleFavorite,clearFavorites]);return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>}
+export function useFavorites(){const context=useContext(FavoritesContext);if(!context)throw new Error('useFavorites harus dipakai di dalam FavoritesProvider');return context}
